@@ -6,6 +6,7 @@ import { CartComponent } from './component/cart/cart.component';
 import { WatchlistComponent } from './component/watchlist/watchlist.component';
 import { MessagesComponent } from './component/messages/messages.component';
 import { ProfileComponent } from './component/profile/profile.component';
+import { LoginComponent } from './component/login/login.component';
 
 @Component({
   selector: 'app-root',
@@ -17,11 +18,16 @@ import { ProfileComponent } from './component/profile/profile.component';
     CartComponent,
     WatchlistComponent,
     MessagesComponent,
-    ProfileComponent
+    ProfileComponent,
+    LoginComponent
   ],
   template: `
-    <div class="min-h-screen bg-gray-50">
-      <app-header (pageChange)="currentPage = $event"></app-header>
+    <!-- Show login page if not logged in -->
+    <app-login *ngIf="!isLoggedIn" (loginSuccess)="onLoginSuccess()"></app-login>
+    
+    <!-- Show main app if logged in -->
+    <div *ngIf="isLoggedIn" class="min-h-screen bg-gray-50">
+      <app-header (pageChange)="currentPage = $event" (logout)="onLogout()"></app-header>
       
       <app-home *ngIf="currentPage === 'home'"></app-home>
       <app-cart *ngIf="currentPage === 'cart'"></app-cart>
@@ -74,4 +80,15 @@ import { ProfileComponent } from './component/profile/profile.component';
 })
 export class AppComponent {
   currentPage = 'home';
+  isLoggedIn = false;  // Set to false so login page shows first
+
+  onLoginSuccess() {
+    this.isLoggedIn = true;
+    this.currentPage = 'home';
+  }
+
+  onLogout() {
+    this.isLoggedIn = false;
+    this.currentPage = 'home';
+  }
 }

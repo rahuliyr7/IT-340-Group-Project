@@ -117,6 +117,7 @@ import { Notification } from '../../models/product.model';
 })
 export class HeaderComponent {
   @Output() pageChange = new EventEmitter<string>();
+  @Output() logout = new EventEmitter<void>();
   
   searchQuery = '';
   mobileMenuOpen = false;
