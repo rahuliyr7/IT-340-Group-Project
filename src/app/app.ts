@@ -7,6 +7,7 @@ import { WatchlistComponent } from './component/watchlist/watchlist.component';
 import { MessagesComponent } from './component/messages/messages.component';
 import { ProfileComponent } from './component/profile/profile.component';
 import { LoginComponent } from './component/login/login.component';
+import { RegisterComponent } from './component/register/register.component';
 
 @Component({
   selector: 'app-root',
@@ -19,11 +20,23 @@ import { LoginComponent } from './component/login/login.component';
     WatchlistComponent,
     MessagesComponent,
     ProfileComponent,
-    LoginComponent
+    LoginComponent,
+    RegisterComponent
   ],
   template: `
-    <!-- Show login page if not logged in -->
-    <app-login *ngIf="!isLoggedIn" (loginSuccess)="onLoginSuccess()"></app-login>
+    <!-- Show registration page when showRegister is true and not logged in -->
+    <app-register 
+      *ngIf="!isLoggedIn && showRegister" 
+      (registerSuccess)="onRegisterSuccess()" 
+      (switchToLogin)="showRegister = false">
+    </app-register>
+    
+    <!-- Show login page when showRegister is false and not logged in -->
+    <app-login 
+      *ngIf="!isLoggedIn && !showRegister" 
+      (loginSuccess)="onLoginSuccess()"
+      (switchToRegister)="showRegister = true">
+    </app-login>
     
     <!-- Show main app if logged in -->
     <div *ngIf="isLoggedIn" class="min-h-screen bg-gray-50">
@@ -80,15 +93,22 @@ import { LoginComponent } from './component/login/login.component';
 })
 export class AppComponent {
   currentPage = 'home';
-  isLoggedIn = false;  // Set to false so login page shows first
+  isLoggedIn = false;
+  showRegister = false;  // This controls which page shows
 
   onLoginSuccess() {
     this.isLoggedIn = true;
     this.currentPage = 'home';
   }
 
+  onRegisterSuccess() {
+    this.isLoggedIn = true;
+    this.currentPage = 'home';
+  }
+
   onLogout() {
     this.isLoggedIn = false;
+    this.showRegister = false;  // Go back to login page
     this.currentPage = 'home';
   }
 }

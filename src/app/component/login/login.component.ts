@@ -159,7 +159,7 @@ import { FormsModule } from '@angular/forms';
           <div class="mt-6 text-center">
             <p class="text-sm text-gray-600">
               Don't have an account? 
-              <button type="button" class="text-blue-600 hover:text-blue-800 font-semibold transition">
+              <button type="button" (click)="goToRegister()" class="text-blue-600 hover:text-blue-800 font-semibold transition">
                 Sign up
               </button>
             </p>
@@ -178,6 +178,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class LoginComponent {
   @Output() loginSuccess = new EventEmitter<void>();
+  @Output() switchToRegister = new EventEmitter<void>();  // ADD THIS LINE
   
   email = '';
   password = '';
@@ -204,10 +205,10 @@ export class LoginComponent {
     setTimeout(() => {
       this.isLoading = false;
       
-      // Demo credentials - accept ANY email/password for now
+      // Accept any email and password for testing
       if (this.email && this.password) {
         console.log('Login successful!');
-        this.loginSuccess.emit();  // THIS IS THE KEY LINE - emits event to parent
+        this.loginSuccess.emit();
       } else {
         this.errorMessage = 'Invalid email or password';
       }
@@ -217,5 +218,9 @@ export class LoginComponent {
   isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
+  }
+
+  goToRegister() {  // ADD THIS METHOD
+    this.switchToRegister.emit();
   }
 }
