@@ -5,3 +5,8 @@ imports: [
   // ... other stuff
   HttpClientModule
 ],
+
+import { FormsModule } from '@angular/forms';
+
+// In imports:
+FormsModule
