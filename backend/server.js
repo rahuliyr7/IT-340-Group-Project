@@ -20,7 +20,7 @@ const transporter = nodemailer.createTransport({
 //added nodemailer transporter
 
 // Connect to MongoDB (use your DB VM IP)
-mongoose.connect('mongodb://192.168.149.130/altantic-auctions', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb://192.168.56.103:27017/auctiondb', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.log('DB connection error:', err));
 
