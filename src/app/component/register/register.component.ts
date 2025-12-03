@@ -482,3 +482,32 @@ export class RegisterComponent {
     this.switchToLogin.emit();
   }
 }
+
+// Chris Thayil added this
+// Update or Add Login/Registration Components
+import { Component } from '@angular/core';
+import { AuthService } from '../auth.service';
+
+@Component({
+  selector: 'app-registration',
+  templateUrl: './registration.component.html'
+})
+export class RegistrationComponent {
+  email: string = '';
+  password: string = '';
+
+  constructor(private authService: AuthService) {}
+
+  onRegister() {
+    this.authService.register(this.email, this.password).subscribe(
+      response => console.log('Registered:', response),
+      error => console.log('Error:', error)
+    );
+  }
+}
+
+<div>
+  <input type="email" [(ngModel)]="email" placeholder="Email">
+  <input type="password" [(ngModel)]="password" placeholder="Password">
+  <button (click)="onRegister()">Register</button>
+</div>
