@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -6,15 +6,14 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://192.168.1.101:3000'; // Use your backend VM IP
-
-  constructor(private http: HttpClient) {}
-
-  register(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, { email, password });
-  }
+  private http = inject(HttpClient);
+  private baseUrl = 'http://localhost:3000';
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, { email, password });
+    return this.http.post<any>(`${this.baseUrl}/login`, { email, password });
+  }
+
+  verifyTwoFactor(userId: string, code: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/verify-2fa`, { userId, code });
   }
 }
