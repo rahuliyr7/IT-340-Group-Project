@@ -39,19 +39,47 @@ app.post('/register', async (req, res) => {
 });
 
 // Login route
+// Login route with 2FA step
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).send('User not found');
-    
-    // Check if password matches hash
+    if (!user) {
+      return res.status(400).json({ ok: false, error: 'user_not_found' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).send('Wrong password');
-    
-    res.send('Login successful');
+    if (!isMatch) {
+      return res.status(400).json({ ok: false, error: 'wrong_password' });
+    }
+
+    // Generate 6-digit 2FA code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Code expires in 10 minutes
+    user.twoFactorCode = code;
+    user.twoFactorExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    // Send code via email
+    await transporter.sendMail({
+      from: `"Atlantic Auctions" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: 'Your Atlantic Auctions 2FA Code',
+      text: `Your authentication code is: ${code}`
+    });
+    //updated login route
+
+    // Tell frontend to go to 2FA
+    return res.json({
+      ok: true,
+      status: '2fa_required',
+      userId: user._id
+    });
   } catch (err) {
-    res.status(400).send('Error logging in');
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'server_error' });
   }
 });
 
