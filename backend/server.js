@@ -10,6 +10,14 @@ require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+//added nodemailer transporter
 
 // Connect to MongoDB (use your DB VM IP)
 mongoose.connect('mongodb://192.168.149.130/altantic-auctions', { useNewUrlParser: true, useUnifiedTopology: true })
