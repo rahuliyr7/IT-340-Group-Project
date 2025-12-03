@@ -71,6 +71,41 @@ app.post('/login', async (req, res) => {
     });
     //updated login route
 
+    // Verify 2FA route
+app.post('/verify-2fa', async (req, res) => {
+  const { userId, code } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(400).json({ ok: false, error: 'user_not_found' });
+    }
+
+    if (!user.twoFactorCode || !user.twoFactorExpiry) {
+      return res.status(400).json({ ok: false, error: 'no_2fa_pending' });
+    }
+
+    if (user.twoFactorCode !== code) {
+      return res.status(400).json({ ok: false, error: 'invalid_code' });
+    }
+
+    if (user.twoFactorExpiry < new Date()) {
+      return res.status(400).json({ ok: false, error: 'expired' });
+    }
+
+    // Clear code so it cannot be reused
+    user.twoFactorCode = null;
+    user.twoFactorExpiry = null;
+    await user.save();
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'server_error' });
+  }
+});
+//2fa route
+
     // Tell frontend to go to 2FA
     return res.json({
       ok: true,
