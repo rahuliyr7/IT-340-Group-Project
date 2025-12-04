@@ -21,7 +21,7 @@ interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
-  private API_URL = 'http://192.168.1.20:3000/api/auth';  // VM2 IP
+  private API_URL = 'http://192.168.10.20:3000/api/auth';  // VM2 IP
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 

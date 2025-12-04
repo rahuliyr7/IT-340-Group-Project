@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -109,6 +110,16 @@ import { FormsModule } from '@angular/forms';
               </p>
             </div>
 
+            <!-- Success Message -->
+            <div *ngIf="successMessage" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p class="text-sm text-green-600 flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                {{successMessage}}
+              </p>
+            </div>
+
             <!-- Login Button -->
             <button
               type="submit"
@@ -178,7 +189,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class LoginComponent {
   @Output() loginSuccess = new EventEmitter<void>();
-  @Output() switchToRegister = new EventEmitter<void>();  // ADD THIS LINE
+  @Output() switchToRegister = new EventEmitter<void>();
   
   email = '';
   password = '';
@@ -186,9 +197,13 @@ export class LoginComponent {
   showPassword = false;
   isLoading = false;
   errorMessage = '';
+  successMessage = '';
+
+  constructor(private authService: AuthService) {}
 
   onLogin() {
     this.errorMessage = '';
+    this.successMessage = '';
     
     if (!this.email || !this.password) {
       this.errorMessage = 'Please enter both email and password';
@@ -202,17 +217,22 @@ export class LoginComponent {
 
     this.isLoading = true;
 
-    setTimeout(() => {
-      this.isLoading = false;
-      
-      // Accept any email and password for testing
-      if (this.email && this.password) {
-        console.log('Login successful!');
-        this.loginSuccess.emit();
-      } else {
-        this.errorMessage = 'Invalid email or password';
+    this.authService.login(this.email, this.password).subscribe({
+      next: (response) => {
+        console.log('Login successful:', response);
+        this.isLoading = false;
+        this.successMessage = 'Login successful! Redirecting...';
+        
+        setTimeout(() => {
+          this.loginSuccess.emit();
+        }, 1000);
+      },
+      error: (error) => {
+        console.error('Login error:', error);
+        this.isLoading = false;
+        this.errorMessage = error.error?.message || 'Login failed. Please check your credentials and try again.';
       }
-    }, 1500);
+    });
   }
 
   isValidEmail(email: string): boolean {
@@ -220,7 +240,7 @@ export class LoginComponent {
     return emailRegex.test(email);
   }
 
-  goToRegister() {  // ADD THIS METHOD
+  goToRegister() {
     this.switchToRegister.emit();
   }
 }
