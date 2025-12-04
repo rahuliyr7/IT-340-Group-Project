@@ -133,8 +133,8 @@ export class HeaderComponent {
     private cartService: CartService,
     private watchlistService: WatchlistService,
     private notificationService: NotificationService,
-    private searchService: SearchService
-    private authService: AuthService,
+    private searchService: SearchService,
+    private authService: AuthService
   ) {
     this.cartService.cartItems$.subscribe(items => {
       this.cartCount = items.length;
@@ -150,7 +150,7 @@ export class HeaderComponent {
     });
   }
 
-  changePage(page: string) {
+    changePage(page: string) {
     this.pageChange.emit(page);
     this.mobileMenuOpen = false;
   }
@@ -160,9 +160,9 @@ export class HeaderComponent {
       this.searchService.addToHistory(this.searchQuery);
     }
   }
-}
 
-onLogout() {
-  this.authService.logout();
-  this.logout.emit();
+  onLogout() {
+    this.authService.logout();
+    this.logout.emit();
+  }
 }
