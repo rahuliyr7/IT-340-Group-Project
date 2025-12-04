@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -498,12 +499,69 @@ export class RegistrationComponent {
 
   constructor(private authService: AuthService) {}
 
-  onRegister() {
-    this.authService.register(this.email, this.password).subscribe(
-      response => console.log('Registered:', response),
-      error => console.log('Error:', error)
-    );
+onRegister() {
+  // Reset errors
+  this.errorMessage = '';
+  this.successMessage = '';
+  this.emailError = '';
+  this.passwordError = '';
+  this.confirmPasswordError = '';
+
+  // Validation
+  if (!this.firstName || !this.lastName || !this.email || !this.password || !this.confirmPassword) {
+    this.errorMessage = 'Please fill in all required fields';
+    return;
   }
+
+  if (!this.isValidEmail(this.email)) {
+    this.emailError = 'Please enter a valid email address';
+    return;
+  }
+
+  if (this.password.length < 8) {
+    this.passwordError = 'Password must be at least 8 characters';
+    return;
+  }
+
+  if (this.password !== this.confirmPassword) {
+    this.confirmPasswordError = 'Passwords do not match';
+    return;
+  }
+
+  if (!this.agreeToTerms) {
+    this.errorMessage = 'You must agree to the Terms of Service';
+    return;
+  }
+
+  // Prepare user data
+  const userData = {
+    firstName: this.firstName,
+    lastName: this.lastName,
+    email: this.email,
+    password: this.password,
+    phone: this.phone,
+    accountType: this.accountType
+  };
+
+  this.isLoading = true;
+
+  // Call backend API
+  this.authService.register(userData).subscribe({
+    next: (response) => {
+      console.log('Registration successful:', response);
+      this.isLoading = false;
+      this.successMessage = 'Account created successfully! Redirecting...';
+      
+      setTimeout(() => {
+        this.registerSuccess.emit();
+      }, 1500);
+    },
+    error: (error) => {
+      console.error('Registration error:', error);
+      this.isLoading = false;
+      this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
+    }
+  });
 }
 
 <div>
