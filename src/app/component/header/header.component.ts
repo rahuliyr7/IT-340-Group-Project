@@ -6,6 +6,7 @@ import { WatchlistService } from '../../services/watchlist.service';
 import { NotificationService } from '../../services/notification.service';
 import { SearchService } from '../../services/search.service';
 import { Notification } from '../../models/product.model';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -133,6 +134,7 @@ export class HeaderComponent {
     private watchlistService: WatchlistService,
     private notificationService: NotificationService,
     private searchService: SearchService
+    private authService: AuthService,
   ) {
     this.cartService.cartItems$.subscribe(items => {
       this.cartCount = items.length;
@@ -158,4 +160,9 @@ export class HeaderComponent {
       this.searchService.addToHistory(this.searchQuery);
     }
   }
+}
+
+onLogout() {
+  this.authService.logout();
+  this.logout.emit();
 }
