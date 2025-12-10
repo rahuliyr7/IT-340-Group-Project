@@ -43,21 +43,9 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: null
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
-});
-
-// Update timestamp on save
-userSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
+}, {
+  timestamps: true  // This automatically adds createdAt and updatedAt
 });
 
 module.exports = mongoose.model('User', userSchema);
