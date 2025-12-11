@@ -17,7 +17,10 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Routes
 const authRoutes = require('./src/routes/auth.routes');
+const productRoutes = require('./src/routes/product.routes');
+
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
