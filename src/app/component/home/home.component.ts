@@ -6,6 +6,7 @@ import { CartService } from '../../services/cart.service';
 import { WatchlistService } from '../../services/watchlist.service';
 import { NotificationService } from '../../services/notification.service';
 import { AuthService } from '../../services/auth.service';
+import { SearchService } from '../../services/search.service';
 import { Product } from '../../models/product.model';
 
 @Component({
@@ -201,15 +202,27 @@ export class HomeComponent implements OnInit {
     private cartService: CartService,
     private watchlistService: WatchlistService,
     private notificationService: NotificationService,
-    private authService: AuthService
+    private authService: AuthService,
+    private searchService: SearchService
   ) {}
 
   ngOnInit() {
     this.authService.currentUser.subscribe(user => {
       this.currentUser = user;
     });
+    
     this.loadProducts();
+    
+    // Subscribe to search trigger from SearchService
+    this.searchService.searchTrigger$.subscribe(query => {
+      if (query && query.trim()) {
+        console.log('Home: Received search query:', query);
+        this.searchQuery = query;
+        this.applyFilters();
+      }
+    });
   }
+  
 
   loadProducts() {
     this.isLoading = true;
