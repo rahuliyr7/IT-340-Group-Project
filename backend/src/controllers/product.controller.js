@@ -1,5 +1,6 @@
 const Product = require('../models/product.model');
 const User = require('../models/user.model');
+const Order = require('../models/order.model');
 
 // Create new product (Sellers only)
 exports.createProduct = async (req, res) => {
@@ -364,7 +365,7 @@ exports.placeBid = async (req, res) => {
   }
 };
 
-// Purchase product (Buyers only)
+// Purchase product (Buyers only) - WITH ORDER CREATION
 exports.purchaseProduct = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -395,17 +396,40 @@ exports.purchaseProduct = async (req, res) => {
       }
     }
 
-    // Mark as sold
+    // Mark product as sold
     product.status = 'sold';
     product.soldTo = user._id;
     product.soldDate = new Date();
-
     await product.save();
 
+    // CREATE ORDER RECORD
+    const order = new Order({
+      buyerId: user._id,
+      buyerName: `${user.firstName} ${user.lastName}`,
+      buyerEmail: user.email,
+      productId: product._id,
+      productName: product.name,
+      productImage: product.images && product.images.length > 0 ? product.images[0] : '',
+      sellerId: product.sellerId,
+      sellerName: product.sellerName,
+      orderType: 'purchase',
+      price: product.price,
+      status: 'completed',
+      orderDate: new Date()
+    });
+    await order.save();
+
     console.log(`Product purchased: ${product.name} by ${user.email}`);
+    console.log(`Order created: ${order._id}`);
 
     res.json({
       message: 'Purchase successful',
+      order: {
+        orderId: order._id,
+        productName: order.productName,
+        price: order.price,
+        orderDate: order.orderDate
+      },
       product: {
         id: product._id,
         name: product.name,
@@ -416,5 +440,78 @@ exports.purchaseProduct = async (req, res) => {
   } catch (error) {
     console.error('Purchase error:', error);
     res.status(500).json({ message: 'Server error while processing purchase' });
+  }
+};
+
+// Helper function to finalize auction (when it ends)
+exports.finalizeAuction = async (productId) => {
+  try {
+    const product = await Product.findById(productId);
+    
+    if (!product || !product.isAuction) {
+      return;
+    }
+    
+    if (product.status !== 'active') {
+      return;
+    }
+    
+    if (new Date() < product.auctionEnd) {
+      return;
+    }
+    
+    // Check if reserve price met
+    if (product.reservePrice && product.currentBid < product.reservePrice) {
+      product.status = 'expired';
+      await product.save();
+      console.log(`Auction expired (reserve not met): ${product.name}`);
+      return;
+    }
+    
+    // If there are bids, create order for highest bidder
+    if (product.bids.length > 0) {
+      const highestBid = product.bids[product.bids.length - 1];
+      const winner = await User.findById(highestBid.userId);
+      
+      if (!winner) {
+        console.error(`Winner user not found for auction: ${product.name}`);
+        product.status = 'expired';
+        await product.save();
+        return;
+      }
+      
+      product.status = 'sold';
+      product.soldTo = winner._id;
+      product.soldDate = new Date();
+      await product.save();
+      
+      // Create order for auction winner
+      const order = new Order({
+        buyerId: winner._id,
+        buyerName: `${winner.firstName} ${winner.lastName}`,
+        buyerEmail: winner.email,
+        productId: product._id,
+        productName: product.name,
+        productImage: product.images && product.images.length > 0 ? product.images[0] : '',
+        sellerId: product.sellerId,
+        sellerName: product.sellerName,
+        orderType: 'auction_win',
+        price: product.price,
+        finalBid: highestBid.amount,
+        status: 'completed',
+        orderDate: new Date()
+      });
+      await order.save();
+      
+      console.log(`Auction won: ${product.name} by ${winner.email} for $${highestBid.amount}`);
+      console.log(`Order created: ${order._id}`);
+    } else {
+      // No bids, mark as expired
+      product.status = 'expired';
+      await product.save();
+      console.log(`Auction expired (no bids): ${product.name}`);
+    }
+  } catch (error) {
+    console.error('Error finalizing auction:', error);
   }
 };
