@@ -110,7 +110,6 @@ const productSchema = new mongoose.Schema({
 // Update timestamp on save
 productSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
-  next();
 });
 
 // Automatically set auction start time when auction is created
@@ -118,7 +117,6 @@ productSchema.pre('save', function(next) {
   if (this.isAuction && !this.auctionStart) {
     this.auctionStart = new Date();
   }
-  next();
 });
 
 module.exports = mongoose.model('Product', productSchema);
