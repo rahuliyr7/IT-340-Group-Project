@@ -1,15 +1,32 @@
 export interface Product {
-  id: number;
+  _id?: string;
+  id?: number;
   name: string;
-  price: number;
-  currentBid?: number;
-  auctionEnd?: Date;
-  image: string;
+  description: string;
   category: string;
   rarity: string;
-  verified: boolean;
+  condition?: string;
+  images?: string[];
+  image?: string;
+  price: number;
   isAuction: boolean;
-  bids?: number;
+  currentBid?: number;
+  reservePrice?: number;
+  auctionStart?: Date;
+  auctionEnd?: Date;
+  bids?: Array<{
+    userId: string;
+    amount: number;
+    timestamp: Date;
+  }>;
+  sellerId: string;
+  sellerName: string;
+  status: string;
+  verified: boolean;
+  soldTo?: string;
+  soldDate?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Notification {
