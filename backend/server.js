@@ -18,9 +18,11 @@ mongoose.connect(process.env.MONGODB_URI)
 // Routes
 const authRoutes = require('./src/routes/auth.routes');
 const productRoutes = require('./src/routes/product.routes');
+const historyRoutes = require('./src/routes/history.routes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/history', historyRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
