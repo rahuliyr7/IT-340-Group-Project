@@ -11,10 +11,13 @@ export class WatchlistService {
 
   toggleWatchlist(product: Product) {
     const currentList = this.watchlistSubject.value;
-    const exists = currentList.find(item => item.id === product.id);
+    const productId = product._id || product.id;
+    const exists = currentList.find(item => (item._id || item.id) === productId);
     
     if (exists) {
-      this.watchlistSubject.next(currentList.filter(item => item.id !== product.id));
+      this.watchlistSubject.next(currentList.filter(item => 
+        (item._id || item.id) !== productId
+      ));
       return false;
     } else {
       this.watchlistSubject.next([...currentList, product]);
@@ -22,8 +25,10 @@ export class WatchlistService {
     }
   }
 
-  isInWatchlist(productId: number) {
-    return this.watchlistSubject.value.some(item => item.id === productId);
+  isInWatchlist(productId: string | number): boolean {
+    return this.watchlistSubject.value.some(item => 
+      (item._id || item.id)?.toString() === productId?.toString()
+    );
   }
 
   getWatchlist() {

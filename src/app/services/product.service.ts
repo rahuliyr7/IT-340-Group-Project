@@ -1,5 +1,5 @@
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Product } from '../models/product.model';
@@ -74,15 +74,38 @@ export class ProductService {
     return this.http.delete<any>(`${this.API_URL}/${id}`);
   }
 
-  // Purchase product (Buyers only)
   purchaseProduct(id: string): Observable<any> {
-    return this.http.post<any>(`${this.API_URL}/${id}/purchase`, {});
-  }
+  const token = localStorage.getItem('token');
+  console.log('🛒 Purchase - Token:', token ? 'exists' : 'missing');
+  
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    'Authorization': token ? `Bearer ${token}` : ''
+  });
+  
+  return this.http.post<any>(
+    `${this.API_URL}/${id}/purchase`, 
+    {}, 
+    { headers }
+  );
+}
 
   // Place bid on auction (Buyers only)
-  placeBid(id: string, amount: number): Observable<any> {
-    return this.http.post<any>(`${this.API_URL}/${id}/bid`, { amount });
-  }
+placeBid(id: string, amount: number): Observable<any> {
+  const token = localStorage.getItem('token');
+  console.log('💰 Bid - Token:', token ? 'exists' : 'missing');
+  
+  const headers = new HttpHeaders({
+    'Content-Type': 'application/json',
+    'Authorization': token ? `Bearer ${token}` : ''
+  });
+  
+  return this.http.post<any>(
+    `${this.API_URL}/${id}/bid`, 
+    { amount }, 
+    { headers }
+  );
+}
 
   // Get products from current state
   getProducts(): Product[] {

@@ -10,18 +10,23 @@ export class CartService {
   cartItems$ = this.cartItemsSubject.asObservable();
 
   addToCart(product: Product) {
-    const currentItems = this.cartItemsSubject.value;
-    if (!product.isAuction && !currentItems.find(item => item.id === product.id)) {
-      this.cartItemsSubject.next([...currentItems, product]);
-      return true;
-    }
-    return false;
+  const currentItems = this.cartItemsSubject.value;
+  const productId = product._id || product.id;
+  if (!product.isAuction && !currentItems.find(item => 
+    (item._id || item.id) === productId
+  )) {
+    this.cartItemsSubject.next([...currentItems, product]);
+    return true;
   }
+  return false;
+}
 
-  removeFromCart(productId: number) {
-    const currentItems = this.cartItemsSubject.value;
-    this.cartItemsSubject.next(currentItems.filter(item => item.id !== productId));
-  }
+  removeFromCart(productId: string | number) {
+  const currentItems = this.cartItemsSubject.value;
+  this.cartItemsSubject.next(currentItems.filter(item => 
+    (item._id || item.id) !== productId
+  ));
+}
 
   getCartItems() {
     return this.cartItemsSubject.value;

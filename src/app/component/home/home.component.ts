@@ -442,10 +442,10 @@ export class HomeComponent implements OnInit {
     this.notificationService.addNotification(message);
   }
 
-  isInWatchlist(productId: string): boolean {
-    // Convert string ID to number for watchlist service
-    return this.watchlistService.isInWatchlist(Number(productId));
-  }
+  isInWatchlist(productId: string | number | undefined): boolean {
+  if (!productId) return false;
+  return this.watchlistService.isInWatchlist(productId);
+}
 
   getRarityClass(rarity: string): string {
     if (rarity === 'Ultra Rare') return 'bg-purple-100 text-purple-600';
