@@ -23,3 +23,23 @@ router.delete('/:id', authMiddleware, productController.deleteProduct);
 router.get('/:id', productController.getProductById); // THIS MUST BE LAST
 
 module.exports = router;
+
+// GET /api/products?tags=collectibles,rare&search=keyword
+router.get('/', async (req, res) => {
+  const query = {};
+
+  if (req.query.search) {
+    query.$or = [
+      { title: { $regex: req.query.search, $options: 'i' } },
+      { description: { $regex: req.query.search, $options: 'i' } }
+    ];
+  }
+
+  if (req.query.tags) {
+    const tags = req.query.tags.split(',');
+    query.tags = { $in: tags };
+  }
+
+  const products = await Product.find(query);
+  res.json(products);
+});
