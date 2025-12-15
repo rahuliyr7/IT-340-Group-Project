@@ -1,0 +1,12 @@
+<!-- search.component.html -->
+<input [(ngModel)]="searchTerm" placeholder="Search items...">
+<div *ngFor="let tag of availableTags">
+  <label>
+    <input type="checkbox" [value]="tag" (change)="updateTags($event)"> {{tag}}
+  </label>
+</div>
+<button (click)="search()">Search</button>
+
+<div *ngFor="let product of products">
+  <!-- Display product -->
+</div>
