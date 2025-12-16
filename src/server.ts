@@ -68,3 +68,6 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
 export const reqHandler = createNodeRequestHandler(app);
 
 app.use('/api/payment', require('./routes/payment.routes'));
+
+app.use('/api/messages', require('./routes/message.routes'));
+
