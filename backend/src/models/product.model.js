@@ -22,6 +22,10 @@ const productSchema = new mongoose.Schema({
     required: [true, 'Rarity is required'],
     enum: ['Common', 'Rare', 'Ultra Rare']
   },
+  tags: [{
+    type: String,
+    trim: true
+  }],
   condition: {
     type: String,
     enum: ['New', 'Like New', 'Good', 'Fair', 'Poor'],
@@ -121,4 +125,4 @@ productSchema.pre('save', function(next) {
 
 module.exports = mongoose.model('Product', productSchema);
 
-tags: [{ type: String }]
+
