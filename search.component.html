@@ -1,5 +1,21 @@
 <!-- search.component.html -->
 <input [(ngModel)]="searchTerm" placeholder="Search items...">
+<!-- Category links under search bar -->
+<div class="category-links">
+  <a href="#"
+     (click)="setCategory(''); $event.preventDefault()"
+     [class.active]="!selectedCategory">
+    All
+  </a>
+
+  <a href="#"
+     *ngFor="let c of categories"
+     (click)="setCategory(c); $event.preventDefault()"
+     [class.active]="selectedCategory === c">
+    {{ c }}
+  </a>
+</div>
+    
 <div *ngFor="let tag of availableTags">
   <label>
     <input type="checkbox" [value]="tag" (change)="updateTags($event)"> {{tag}}
