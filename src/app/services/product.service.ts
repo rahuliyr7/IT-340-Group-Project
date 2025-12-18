@@ -48,6 +48,10 @@ export class ProductService {
         })
       );
   }
+  // NEW: Get categories (from Product enum)
+getCategories(): Observable<{ message: string; categories: string[] }> {
+  return this.http.get<{ message: string; categories: string[] }>(`${this.API_URL}/categories`);
+}
 
   // Load products into state
   loadProducts() {
