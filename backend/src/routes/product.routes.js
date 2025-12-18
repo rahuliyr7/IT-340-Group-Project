@@ -4,7 +4,8 @@ const productController = require('../controllers/product.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 
 // Public routes (no authentication required)
-router.get('/', productController.getAllProducts);
+router.get('/', productController.getAllProducts);\
+router.get('/categories', productController.getCategories);
 
 // Protected routes - SPECIFIC ROUTES MUST COME BEFORE PARAMETERIZED ROUTES
 // Seller routes - Create, update, delete products
