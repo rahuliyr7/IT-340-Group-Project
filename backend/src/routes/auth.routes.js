@@ -1,82 +1,89 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/auth.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+const User = require('../models/user.model');
+const jwt = require('jsonwebtoken');
+const speakeasy = require('speakeasy');
+const qrcode = require('qrcode');
+const { sendEmail } = require('../services/email.service');
 
-// Public routes
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/register', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = new User({ email, password });
+    await user.save();
+    await sendEmail(email, 'Welcome to Atlantic Auctions', 'Your account is created. Login to start bidding!');
+    res.status(201).json({ message: 'User registered' });
+  } catch (error) {
+    res.status(500).json({ error: 'Signup failed' });
+  }
+});
 
-// Protected routes
-router.get('/verify', authMiddleware, authController.verifyToken);
-router.post('/logout', authMiddleware, authController.logout);
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password, token } = req.body;
+    const user = await User.findOne({ email });
+    if (!user || !(await user.comparePassword(password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+    if (user.twoFaEnabled) {
+      const verified = speakeasy.totp.verify({
+        secret: user.twoFaSecret,
+        encoding: 'base32',
+        token,
+      });
+      if (!verified) return res.status(401).json({ error: 'Invalid 2FA token' });
+    }
+    const jwtToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: '1h' });
+    await sendEmail(email, 'Login Notification', 'You logged in successfully.');
+    res.json({ token: jwtToken });
+  } catch (error) {
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+router.post('/logout', async (req, res) => {
+  // Assume token in header; invalidate if needed
+  const email = req.body.email; // Or extract from token
+  await sendEmail(email, 'Logout Notification', 'You logged out successfully.');
+  res.json({ message: 'Logged out' });
+});
+
+router.post('/setup-2fa', async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id); // Assume auth middleware
+    const secret = speakeasy.generateSecret({ name: 'AtlanticAuctions' });
+    user.twoFaSecret = secret.base32;
+    await user.save();
+    qrcode.toDataURL(secret.otpauth_url, (err, data) => {
+      res.json({ qrCode: data, secret: secret.base32 });
+    });
+  } catch (error) {
+    res.status(500).json({ error: '2FA setup failed' });
+  }
+});
+
+router.post('/verify-2fa', async (req, res) => {
+  try {
+    const { token } = req.body;
+    const user = await User.findById(req.user.id);
+    const verified = speakeasy.totp.verify({
+      secret: user.twoFaSecret,
+      encoding: 'base32',
+      token,
+    });
+    if (verified) {
+      user.twoFaEnabled = true;
+      await user.save();
+      res.json({ message: '2FA enabled' });
+    } else {
+      res.status(400).json({ error: 'Invalid token' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+// Add purchase notification in product routes if needed
+// e.g., after purchase: sendEmail(user.email, 'Purchase Confirmation', 'You bought X for $Y.');
 
 module.exports = router;
-
-// routes/2fa.routes.js (or inside auth routes)
-const speakeasy = require('speakeasy');
-const QRCode = require('qrcode');
-const User = require('../models/User'); // Adjust path
-
-// Setup 2FA - Generate secret and QR code
-router.post('/setup-2fa', async (req, res) => {
-  const user = await User.findById(req.user.id); // Assuming authenticated
-
-  const secret = speakeasy.generateSecret({
-    name: `Atlantic Auctions (${user.email})`
-  });
-
-  user.twoFactorSecret = secret.base32;
-  await user.save();
-
-  QRCode.toDataURL(secret.otpauth_url, (err, dataURL) => {
-    if (err) return res.status(500).json({ error: 'QR generation failed' });
-    res.json({ qrCode: dataURL, secret: secret.base32 });
-  });
-});
-
-// Verify and enable 2FA
-router.post('/verify-2fa', async (req, res) => {
-  const { token } = req.body;
-  const user = await User.findById(req.user.id);
-
-  const verified = speakeasy.totp.verify({
-    secret: user.twoFactorSecret,
-    encoding: 'base32',
-    token,
-    window: 2 // Allows slight time drift
-  });
-
-  if (verified) {
-    user.twoFactorEnabled = true;
-    await user.save();
-    res.json({ success: true });
-  } else {
-    res.status(400).json({ success: false, error: 'Invalid code' });
-  }
-});
-
-// In your login route - after password check, if 2FA enabled
-if (user.twoFactorEnabled) {
-  // Send a temp token or flag, prompt for code on frontend
-  return res.json({ requires2FA: true });
-}
-
-// Verify 2FA code during login
-router.post('/verify-login-2fa', async (req, res) => {
-  const { token, tempUserId } = req.body; // Send temp identifier from initial login
-  const user = await User.findById(tempUserId);
-
-  const verified = speakeasy.totp.verify({
-    secret: user.twoFactorSecret,
-    encoding: 'base32',
-    token
-  });
-
-  if (verified) {
-    // Proceed with full login (issue JWT/session)
-    res.json({ success: true });
-  } else {
-    res.status(400).json({ success: false });
-  }
-});
