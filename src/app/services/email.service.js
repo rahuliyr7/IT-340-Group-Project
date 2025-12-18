@@ -1,27 +1,25 @@
-// services/email.service.js
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-// Configure transporter (use Gmail for testing; switch to SendGrid/Mailgun in production)
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Or your SMTP host
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: false,
   auth: {
-    user: 'yourauctionemail@gmail.com',  // Replace with a real email
-    pass: 'your-app-password-here'       
-  }
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
 });
 
-async function sendEmail(to, subject, text, html = '') {
-  const mailOptions = {
-    from: '"Atlantic Auctions" <yourauctionemail@gmail.com>',
-    to,
-    subject,
-    text,
-    html: html || text.replace(/\n/g, '<br>')
-  };
-
+async function sendEmail(to, subject, text) {
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${to}: ${subject}`);
+    await transporter.sendMail({
+      from: process.env.FROM_EMAIL,
+      to,
+      subject,
+      text,
+    });
+    console.log(`Email sent to ${to}`);
   } catch (error) {
     console.error('Email error:', error);
   }
