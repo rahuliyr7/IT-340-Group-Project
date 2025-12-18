@@ -50,5 +50,5 @@ const userSchema = new mongoose.Schema({
 
 module.exports = mongoose.model('User', userSchema);
 
-twoFactorSecret: { type: String },   // Stores the base32 secret
+twoFactorSecret: { type: String }   // Stores the base32 secret
 twoFactorEnabled: { type: Boolean, default: false }
