@@ -1,54 +1,23 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, 'First name is required'],
-    trim: true,
-    minlength: [2, 'First name must be at least 2 characters']
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required'],
-    trim: true,
-    minlength: [2, 'Last name must be at least 2 characters']
-  },
-  email: {
-    type: String,
-    required: [true, 'Email is required'],
-    unique: true,
-    lowercase: true,
-    trim: true,
-    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
-  },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [8, 'Password must be at least 8 characters']
-  },
-  phone: {
-    type: String,
-    default: '',
-    trim: true
-  },
-  accountType: {
-    type: String,
-    enum: ['buyer', 'seller'],
-    default: 'buyer'
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
-  lastLogin: {
-    type: Date,
-    default: null
-  }
-}, {
-  timestamps: true  // This automatically adds createdAt and updatedAt
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  twoFaSecret: { type: String },
+  twoFaEnabled: { type: Boolean, default: false },
+  // Add other fields as needed
 });
 
-module.exports = mongoose.model('User', userSchema);
+userSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
 
-twoFactorSecret: { type: String }   // Stores the base32 secret
-twoFactorEnabled: { type: Boolean, default: false }
+userSchema.methods.comparePassword = async function(password) {
+  return bcrypt.compare(password, this.password);
+};
+
+module.exports = mongoose.model('User', userSchema);
