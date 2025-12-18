@@ -111,6 +111,16 @@ exports.getAllProducts = async (req, res) => {
         { description: { $regex: search, $options: 'i' } }
       ];
     }
+    //Tag filters
+    if(req.query.tags){
+      const tagArr=String(req.query.tags)
+      .split(',')
+      .map(t =>t.trim())
+      .filter(Boolean);
+      if(tagArr.length){
+        filter.tags={$all: tagArr};
+      }
+    }
 
     // Build sort
     let sort = {};
@@ -279,6 +289,20 @@ exports.deleteProduct = async (req, res) => {
   } catch (error) {
     console.error('Delete product error:', error);
     res.status(500).json({ message: 'Server error while deleting product' });
+  }
+};
+// Get available product categories (from enum)
+exports.getCategories = async (req, res) => {
+  try {
+    const categories = Product.schema.path('category').enumValues;
+
+    res.json({
+      message: 'Categories retrieved successfully',
+      categories
+    });
+  } catch (error) {
+    console.error('Get categories error:', error);
+    res.status(500).json({ message: 'Server error while fetching categories' });
   }
 };
 
