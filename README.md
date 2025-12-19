@@ -47,3 +47,9 @@ Frontend sends all API requests top
 http://192.168.10.20:3000
 
 ```
+
+## Authentication
+- Login credentials are sent to backend to verify
+- If two factor authentication is on an additonal step will occur
+- Frontend prompt the verification code and submits to backend
+- All authentication logic handled backend
