@@ -14,7 +14,7 @@
 ```
 
 ## Collections
-- **users**: User authentication and profile data
+- **users**: User authentication, profile data, 2FA 
 
 ## Indexes
 - users.email (unique)
