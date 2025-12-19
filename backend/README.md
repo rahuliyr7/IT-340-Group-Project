@@ -58,7 +58,7 @@ Ensure .env is in .gitignore
 - Supports optional two factor 
 - 2FA config is stored in user model
 - When enabled the authentiation required another setep
-- Backend validation certifie secure authenitcation/
+- Backend validation certifies secure authenitcation
  
  ## Firewall Rules
  Allow API traffic on port 3000:
@@ -73,5 +73,6 @@ Ensure .env is in .gitignore
  - Front end on VM1 communicated directly with this backend
  - server.js contains routing and middleware logic
    
+
 
 
